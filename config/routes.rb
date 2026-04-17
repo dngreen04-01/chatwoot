@@ -668,4 +668,17 @@ Rails.application.routes.draw do
   # ----------------------------------------------------------------------
   # Routes for testing
   resources :widget_tests, only: [:index] unless Rails.env.production?
+
+  # ----------------------------------------------------------------------
+  # Layer 3 — Kin routes (Phase 1.0). All routes namespaced under
+  # /api/kin/v1/ to avoid colliding with Chatwoot's /api/v1/ and
+  # /api/v2/ surfaces. Add new resources inside the inner namespace
+  # block; do not move existing Chatwoot routes.
+  namespace :api, defaults: { format: 'json' } do
+    namespace :kin do
+      namespace :v1 do
+        resources :installations, only: [:create]
+      end
+    end
+  end
 end
