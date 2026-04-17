@@ -13,7 +13,7 @@ module Kin
 
     belongs_to :account
 
-    encrypts :shopify_access_token
+    encrypts :shopify_access_token if Chatwoot.encryption_configured?
 
     validates :shopify_domain, presence: true, uniqueness: true
     validates :shopify_access_token, presence: true
