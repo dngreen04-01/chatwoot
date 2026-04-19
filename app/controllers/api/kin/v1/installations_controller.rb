@@ -36,6 +36,25 @@ module Api
           end
         end
 
+        # PATCH /api/kin/v1/installations/:domain/uninstall
+        #
+        # Called by the Shopify app's `app/uninstalled` webhook via
+        # `notifyRailsUninstall` (personal-kin/kin/app/lib/provisioning.server.ts).
+        # Idempotent: Shopify retries webhooks, so calling twice is a no-op on
+        # the second hit. A 404 on an unknown domain is non-fatal — the
+        # app-side handler logs and continues.
+        def uninstall
+          installation = ::Kin::ShopifyInstallation.find_by(shopify_domain: params[:domain])
+          return head :not_found if installation.nil?
+
+          installation.update!(uninstalled_at: Time.current) if installation.uninstalled_at.nil?
+
+          render json: {
+            shopify_domain: installation.shopify_domain,
+            uninstalled_at: installation.uninstalled_at
+          }
+        end
+
         private
 
         def installation_params

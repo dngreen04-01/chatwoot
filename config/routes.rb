@@ -677,7 +677,11 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: 'json' } do
     namespace :kin do
       namespace :v1 do
-        resources :installations, only: [:create]
+        resources :installations, only: [:create] do
+          collection do
+            patch ':domain/uninstall', action: :uninstall, constraints: { domain: %r{[^/]+} }
+          end
+        end
       end
     end
   end
