@@ -15,7 +15,10 @@ module Api
           return render(json: { error: 'account_not_found' }, status: :not_found) if account.nil?
           return render(json: { error: 'contact_not_found' }, status: :not_found) if contact.nil?
 
-          notes = ::Kin::ContactNote.where(account_id: account.id, contact_id: contact.id).ordered
+          notes = ::Kin::ContactNote
+                  .where(account_id: account.id, contact_id: contact.id)
+                  .includes(:author)
+                  .ordered
 
           render json: { data: notes.map { |n| serialize(n) } }
         end
@@ -30,7 +33,7 @@ module Api
             contact_id: contact.id,
             author_id: author.id,
             body: mutation_params[:body],
-            pinned_at: mutation_params[:pinned] ? Time.current : nil
+            pinned_at: cast_bool(mutation_params[:pinned]) ? Time.current : nil
           )
 
           if note.save
@@ -47,7 +50,7 @@ module Api
           attrs = {}
           attrs[:body] = mutation_params[:body] if mutation_params.key?(:body)
           if mutation_params.key?(:pinned)
-            attrs[:pinned_at] = ActiveModel::Type::Boolean.new.cast(mutation_params[:pinned]) ? (note.pinned_at || Time.current) : nil
+            attrs[:pinned_at] = cast_bool(mutation_params[:pinned]) ? (note.pinned_at || Time.current) : nil
           end
 
           if note.update(attrs)
@@ -89,6 +92,10 @@ module Api
 
         def author
           @author ||= account&.users&.find_by(id: mutation_params[:author_id])
+        end
+
+        def cast_bool(value)
+          ActiveModel::Type::Boolean.new.cast(value)
         end
 
         def serialize(note)

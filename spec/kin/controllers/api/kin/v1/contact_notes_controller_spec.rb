@@ -82,6 +82,14 @@ RSpec.describe Api::Kin::V1::ContactNotesController, type: :request do
       expect(response).to have_http_status(:not_found)
       expect(response.parsed_body['error']).to eq('author_not_found')
     end
+
+    it 'treats the string "false" as unpinned' do
+      signed_request(:post, '/api/kin/v1/contact_notes',
+                     { account_id: account.id, contact_id: contact.id, author_id: agent.id, body: 'x', pinned: 'false' })
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['pinned_at']).to be_nil
+    end
   end
 
   describe 'PATCH /api/kin/v1/contact_notes/:id' do
