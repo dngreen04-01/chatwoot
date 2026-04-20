@@ -682,6 +682,18 @@ Rails.application.routes.draw do
             patch ':domain/uninstall', action: :uninstall, constraints: { domain: %r{[^/]+} }
           end
         end
+
+        # Phase 1.4 — Order-context cache. All POST bodies so the HMAC
+        # body signature fully covers the request; no GET scoping params.
+        post 'order_contexts/lookup',   to: 'order_contexts#lookup'
+        post 'order_contexts/upsert',   to: 'order_contexts#upsert'
+        post 'order_contexts/destroy',  to: 'order_contexts#destroy'
+
+        # Phase 1.4 — Contact notes CRUD.
+        post  'contact_notes/list',     to: 'contact_notes#list'
+        post  'contact_notes',          to: 'contact_notes#create'
+        patch 'contact_notes/:id',      to: 'contact_notes#update'
+        post  'contact_notes/:id/destroy', to: 'contact_notes#destroy'
       end
     end
   end
