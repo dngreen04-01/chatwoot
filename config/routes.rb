@@ -694,6 +694,10 @@ Rails.application.routes.draw do
         post  'contact_notes',          to: 'contact_notes#create'
         patch 'contact_notes/:id',      to: 'contact_notes#update'
         post  'contact_notes/:id/destroy', to: 'contact_notes#destroy'
+
+        # Phase 1.5 — Shopify write-back audit log (append-only).
+        post 'shopify_actions',      to: 'shopify_actions#create'
+        post 'shopify_actions/list', to: 'shopify_actions#list'
       end
     end
   end
