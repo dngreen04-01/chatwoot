@@ -698,6 +698,19 @@ Rails.application.routes.draw do
         # Phase 1.5 — Shopify write-back audit log (append-only).
         post 'shopify_actions',      to: 'shopify_actions#create'
         post 'shopify_actions/list', to: 'shopify_actions#list'
+
+        # Phase 1.6 — Macro engine. POST-only (body-signed) surface for
+        # macro CRUD and usage logging; the list + daily_counts endpoint
+        # feeds the detail-pane chart.
+        post  'macros/list',          to: 'macros#list'
+        post  'macros',               to: 'macros#create'
+        patch 'macros/:id',           to: 'macros#update'
+        post  'macros/:id/destroy',   to: 'macros#destroy'
+        post  'macros/:id/duplicate', to: 'macros#duplicate'
+        post  'macros/seed_defaults', to: 'macros#seed_defaults'
+
+        post  'macro_usages',      to: 'macro_usages#create'
+        post  'macro_usages/list', to: 'macro_usages#list'
       end
     end
   end
