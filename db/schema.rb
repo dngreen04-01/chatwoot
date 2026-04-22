@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_09_091202) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_22_000002) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -931,6 +931,110 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_09_091202) do
     t.jsonb "settings", default: {}
   end
 
+  create_table "kin_contact_notes", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "pinned_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id", "pinned_at", "created_at"], name: "index_kin_contact_notes_on_scope_and_sort", order: { pinned_at: "DESC NULLS LAST", created_at: :desc }
+    t.index ["account_id"], name: "index_kin_contact_notes_on_account_id"
+    t.index ["author_id"], name: "index_kin_contact_notes_on_author_id"
+    t.index ["contact_id"], name: "index_kin_contact_notes_on_contact_id"
+  end
+
+  create_table "kin_macro_usages", force: :cascade do |t|
+    t.bigint "macro_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "agent_id", null: false
+    t.bigint "conversation_id"
+    t.datetime "used_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "used_at"], name: "index_kin_macro_usages_on_account_and_used", order: { used_at: :desc }
+    t.index ["account_id"], name: "index_kin_macro_usages_on_account_id"
+    t.index ["agent_id"], name: "index_kin_macro_usages_on_agent_id"
+    t.index ["conversation_id"], name: "index_kin_macro_usages_on_conversation_id"
+    t.index ["macro_id", "used_at"], name: "index_kin_macro_usages_on_macro_id_and_used_at", order: { used_at: :desc }
+    t.index ["macro_id"], name: "index_kin_macro_usages_on_macro_id"
+  end
+
+  create_table "kin_macros", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.text "content", null: false
+    t.string "category", default: "General", null: false
+    t.jsonb "channels_json", default: ["email", "chat"], null: false
+    t.bigint "created_by_id"
+    t.integer "usage_count", default: 0, null: false
+    t.datetime "last_used_at"
+    t.string "shortcut_key"
+    t.jsonb "auto_apply_json", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "category"], name: "index_kin_macros_on_account_id_and_category"
+    t.index ["account_id", "name"], name: "index_kin_macros_on_account_id_and_name", unique: true
+    t.index ["account_id", "shortcut_key"], name: "index_kin_macros_on_account_and_shortcut", unique: true, where: "(shortcut_key IS NOT NULL)"
+    t.index ["account_id"], name: "index_kin_macros_on_account_id"
+    t.index ["created_by_id"], name: "index_kin_macros_on_created_by_id"
+  end
+
+  create_table "kin_order_contexts", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "conversation_id", null: false
+    t.string "shopify_order_id"
+    t.string "shopify_order_number"
+    t.jsonb "order_data_json", default: {}, null: false
+    t.datetime "last_synced_at", null: false
+    t.text "last_sync_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "conversation_id"], name: "index_kin_order_contexts_on_account_id_and_conversation_id", unique: true
+    t.index ["account_id"], name: "index_kin_order_contexts_on_account_id"
+    t.index ["conversation_id"], name: "index_kin_order_contexts_on_conversation_id"
+  end
+
+  create_table "kin_shopify_actions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "agent_id", null: false
+    t.bigint "conversation_id"
+    t.string "action_name", null: false
+    t.string "shopify_order_id"
+    t.string "shopify_order_number"
+    t.jsonb "payload_json", default: {}, null: false
+    t.jsonb "result_json", default: {}, null: false
+    t.string "status", null: false
+    t.text "error_message"
+    t.datetime "executed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "conversation_id", "executed_at"], name: "index_kin_shopify_actions_on_conv_and_executed", order: { executed_at: :desc }
+    t.index ["account_id", "executed_at"], name: "index_kin_shopify_actions_on_account_and_executed", order: { executed_at: :desc }
+    t.index ["account_id"], name: "index_kin_shopify_actions_on_account_id"
+    t.index ["agent_id"], name: "index_kin_shopify_actions_on_agent_id"
+    t.index ["conversation_id"], name: "index_kin_shopify_actions_on_conversation_id"
+  end
+
+  create_table "kin_shopify_installations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "shopify_domain", null: false
+    t.text "shopify_access_token"
+    t.string "shopify_store_name"
+    t.string "shopify_plan"
+    t.string "billing_charge_id"
+    t.string "billing_status", default: "pending"
+    t.datetime "installed_at"
+    t.datetime "uninstalled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "scopes"
+    t.index ["account_id"], name: "index_kin_shopify_installations_on_account_id"
+    t.index ["billing_status"], name: "index_kin_shopify_installations_on_billing_status"
+    t.index ["shopify_domain"], name: "index_kin_shopify_installations_on_shopify_domain", unique: true
+  end
+
   create_table "labels", force: :cascade do |t|
     t.string "title"
     t.text "description"
@@ -1315,6 +1419,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_09_091202) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "kin_contact_notes", "accounts"
+  add_foreign_key "kin_contact_notes", "contacts", on_delete: :cascade
+  add_foreign_key "kin_contact_notes", "users", column: "author_id"
+  add_foreign_key "kin_macro_usages", "accounts"
+  add_foreign_key "kin_macro_usages", "conversations", on_delete: :nullify
+  add_foreign_key "kin_macro_usages", "kin_macros", column: "macro_id", on_delete: :cascade
+  add_foreign_key "kin_macro_usages", "users", column: "agent_id"
+  add_foreign_key "kin_macros", "accounts"
+  add_foreign_key "kin_macros", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "kin_order_contexts", "accounts"
+  add_foreign_key "kin_order_contexts", "conversations", on_delete: :cascade
+  add_foreign_key "kin_shopify_actions", "accounts"
+  add_foreign_key "kin_shopify_actions", "conversations", on_delete: :nullify
+  add_foreign_key "kin_shopify_actions", "users", column: "agent_id"
+  add_foreign_key "kin_shopify_installations", "accounts"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).
