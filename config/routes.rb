@@ -711,6 +711,13 @@ Rails.application.routes.draw do
 
         post  'macro_usages',      to: 'macro_usages#create'
         post  'macro_usages/list', to: 'macro_usages#list'
+
+        # Phase 1.7 — Shopify mandatory privacy webhooks (forwarded
+        # from the Remix app after Shopify HMAC is verified). Inner
+        # HMAC is the shared Kin installation secret.
+        post 'compliance/customer_redact',       to: 'compliance#customer_redact'
+        post 'compliance/customer_data_request', to: 'compliance#customer_data_request'
+        post 'compliance/shop_redact',           to: 'compliance#shop_redact'
       end
     end
   end
