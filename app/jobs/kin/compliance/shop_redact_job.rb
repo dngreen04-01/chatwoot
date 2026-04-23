@@ -32,6 +32,7 @@ module Kin
         return Rails.logger.info("[kin:compliance] ShopRedactJob account gone account_id=#{account_id}") if account.nil?
 
         ActiveRecord::Base.transaction do
+          ::Kin::ContactAccessLog.where(account_id: account.id).delete_all
           ::Kin::MacroUsage.where(account_id: account.id).delete_all
           ::Kin::Macro.where(account_id: account.id).delete_all
           ::Kin::ShopifyAction.where(account_id: account.id).delete_all

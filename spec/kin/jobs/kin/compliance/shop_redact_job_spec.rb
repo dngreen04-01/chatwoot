@@ -38,12 +38,14 @@ RSpec.describe Kin::Compliance::ShopRedactJob, type: :job do
                        email: 'lena@example.com',
                        phone_number: '+64211111111')
       create(:kin_contact_note, account: account, contact: contact)
+      create(:kin_contact_access_log, account: account, contact: contact)
       create(:kin_order_context, account: account) if defined?(FactoryBot.factories[:kin_order_context])
 
       described_class.new.perform(shop_domain: shop_domain, account_id: account.id)
 
       expect(::Kin::ShopifyInstallation.where(account_id: account.id, shopify_domain: shop_domain)).to be_empty
       expect(::Kin::ContactNote.where(account_id: account.id)).to be_empty
+      expect(::Kin::ContactAccessLog.where(account_id: account.id)).to be_empty
 
       contact.reload
       expect(contact.name).to eq('[redacted]')

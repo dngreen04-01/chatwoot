@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_22_000002) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_23_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -931,6 +931,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_000002) do
     t.jsonb "settings", default: {}
   end
 
+  create_table "kin_contact_access_logs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "agent_id", null: false
+    t.bigint "contact_id"
+    t.bigint "conversation_id"
+    t.string "action", null: false
+    t.datetime "accessed_at", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "accessed_at"], name: "index_kin_contact_access_logs_on_account_and_accessed", order: { accessed_at: :desc }
+    t.index ["account_id"], name: "index_kin_contact_access_logs_on_account_id"
+    t.index ["agent_id", "accessed_at"], name: "index_kin_contact_access_logs_on_agent_and_accessed", order: { accessed_at: :desc }
+    t.index ["agent_id"], name: "index_kin_contact_access_logs_on_agent_id"
+    t.index ["contact_id"], name: "index_kin_contact_access_logs_on_contact_id"
+    t.index ["conversation_id"], name: "index_kin_contact_access_logs_on_conversation_id"
+  end
+
   create_table "kin_contact_notes", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "contact_id", null: false
@@ -1419,6 +1438,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_000002) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "kin_contact_access_logs", "accounts"
+  add_foreign_key "kin_contact_access_logs", "contacts", on_delete: :nullify
+  add_foreign_key "kin_contact_access_logs", "conversations", on_delete: :nullify
+  add_foreign_key "kin_contact_access_logs", "users", column: "agent_id"
   add_foreign_key "kin_contact_notes", "accounts"
   add_foreign_key "kin_contact_notes", "contacts", on_delete: :cascade
   add_foreign_key "kin_contact_notes", "users", column: "author_id"
